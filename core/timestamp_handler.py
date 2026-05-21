@@ -22,6 +22,7 @@ from typing import Callable, Generator, Optional
 if os.name == "nt":
     import ctypes
     import ctypes.wintypes as w
+    from ctypes import POINTER
 
     # ── 常量 ────────────────────────────────────────────────────────────
     GENERIC_READ = 0x80000000
@@ -55,18 +56,18 @@ if os.name == "nt":
     _GetFileTime = ctypes.windll.kernel32.GetFileTime
     _GetFileTime.argtypes = [
         w.HANDLE,   # hFile
-        w.POINTER(FILETIME),  # lpCreationTime
-        w.POINTER(FILETIME),  # lpLastWriteTime
-        w.POINTER(FILETIME),  # lpLastAccessTime
+        POINTER(FILETIME),  # lpCreationTime
+        POINTER(FILETIME),  # lpLastWriteTime
+        POINTER(FILETIME),  # lpLastAccessTime
     ]
     _GetFileTime.restype = w.BOOL
 
     _SetFileTime = ctypes.windll.kernel32.SetFileTime
     _SetFileTime.argtypes = [
         w.HANDLE,   # hFile
-        w.POINTER(FILETIME),  # lpCreationTime  (可 NULL)
-        w.POINTER(FILETIME),  # lpLastWriteTime (可 NULL)
-        w.POINTER(FILETIME),  # lpLastAccessTime (可 NULL)
+        POINTER(FILETIME),  # lpCreationTime  (可 NULL)
+        POINTER(FILETIME),  # lpLastWriteTime (可 NULL)
+        POINTER(FILETIME),  # lpLastAccessTime (可 NULL)
     ]
     _SetFileTime.restype = w.BOOL
 
