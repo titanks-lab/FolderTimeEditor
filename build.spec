@@ -214,7 +214,7 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
     # ── 版本信息 ──────────────────────────────────
-    version=_version_info_path if os.path.exists(_version_info_path) else None,
+    version=_version_info_path if _version_info_path and os.path.exists(_version_info_path) else None,
     # ── 图标 ──────────────────────────────────────
     icon=_icon_path,
 )
