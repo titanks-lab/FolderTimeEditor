@@ -142,7 +142,6 @@ a = Analysis(
         "cv2",
         "PIL.ImageShow",
         "PIL.ImageQt",
-        "PIL.ImageGrab",
         "notebook",
         "jupyter",
         "IPython",
