@@ -213,7 +213,7 @@ class FolderTimeEditor(tb.Window):
 
         # ── Time settings section ──
         settings_frame = tb.LabelFrame(
-            scroll_frame, text='⏱  时间设置', padding=10,
+            scroll_frame, text='⏱  时间设置',
         )
         settings_frame.pack(fill=X, padx=5, pady=5)
 
@@ -260,7 +260,7 @@ class FolderTimeEditor(tb.Window):
         ).pack(side=LEFT, padx=2)
 
         # ── Operation buttons ──
-        op_frame = tb.LabelFrame(scroll_frame, text='操作', padding=10)
+        op_frame = tb.LabelFrame(scroll_frame, text='操作')
         op_frame.pack(fill=X, padx=5, pady=5)
 
         preview_btn = tb.Button(
@@ -283,7 +283,7 @@ class FolderTimeEditor(tb.Window):
         self._undo_btn.pack(fill=X, pady=2)
 
         # ── Profile buttons ──
-        profile_frame = tb.LabelFrame(scroll_frame, text='方案管理', padding=10)
+        profile_frame = tb.LabelFrame(scroll_frame, text='方案管理')
         profile_frame.pack(fill=X, padx=5, pady=5)
 
         tb.Button(
@@ -298,7 +298,7 @@ class FolderTimeEditor(tb.Window):
 
     def _build_log_panel(self):
         """Build the log output panel at the bottom."""
-        log_frame = tb.LabelFrame(self, text='📋  操作日志', padding=2)
+        log_frame = tb.LabelFrame(self, text='📋  操作日志')
         log_frame.pack(fill=BOTH, padx=5, pady=(0, 5))
 
         self.log = LogWidget(log_frame)
