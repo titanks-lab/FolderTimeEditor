@@ -57,7 +57,6 @@ class DatePicker(tb.Frame):
         self.btn = tb.Button(
             self,
             text='📅',
-            bootstyle='secondary-outline',
             command=self._toggle_calendar,
             width=3,
         )
@@ -111,12 +110,12 @@ class DatePicker(tb.Frame):
         nav = tb.Frame(win)
         nav.pack(fill=X, padx=4, pady=4)
 
-        tb.Button(nav, text='◀', width=3, bootstyle='secondary-outline',
+        tb.Button(nav, text='◀', width=3,
                   command=lambda: self._shift_month(-1)).pack(side=LEFT)
         self._month_label = tb.Label(nav, text='', font=('Segoe UI', 11, 'bold'),
                                      anchor=CENTER)
         self._month_label.pack(side=LEFT, fill=X, expand=True)
-        tb.Button(nav, text='▶', width=3, bootstyle='secondary-outline',
+        tb.Button(nav, text='▶', width=3,
                   command=lambda: self._shift_month(1)).pack(side=LEFT)
 
         # Calendar grid
@@ -160,15 +159,14 @@ class DatePicker(tb.Frame):
                         text=str(day),
                         width=3,
                         padding=0,
-                        bootstyle='secondary-link',
                         command=lambda dt=d: self._select_date(dt),
                     )
                     # Highlight today
                     if d == today:
-                        btn.configure(bootstyle='primary')
+                        btn.configure()
                     # Highlight current selection
                     if sel and d == sel:
-                        btn.configure(bootstyle='success')
+                        btn.configure()
                     btn.grid(row=r, column=c, padx=1, pady=1)
 
     def _shift_month(self, delta: int):
@@ -217,14 +215,12 @@ class TimeEntry(tb.Frame):
 
         # Spin buttons
         self._up_btn = tb.Button(
-            self, text='▲', width=2, padding=0,
-            bootstyle='secondary-outline', command=self._spin_up,
+            self, text='▲', width=2, padding=0, command=self._spin_up,
         )
         self._up_btn.pack(side=LEFT, padx=(1, 0))
 
         self._down_btn = tb.Button(
-            self, text='▼', width=2, padding=0,
-            bootstyle='secondary-outline', command=self._spin_down,
+            self, text='▼', width=2, padding=0, command=self._spin_down,
         )
         self._down_btn.pack(side=LEFT, padx=(0, 0))
 
@@ -289,7 +285,7 @@ class DateTimePicker(tb.Frame):
         self.enabled_var = tk.BooleanVar(value=True)
         self.enabled_cb = tb.Checkbutton(
             self, variable=self.enabled_var, text='',
-            bootstyle='round-toggle',
+            
             command=self._on_enable_toggle,
         )
         self.enabled_cb.pack(side=LEFT, padx=(0, 2))
@@ -305,14 +301,14 @@ class DateTimePicker(tb.Frame):
 
         self._abs_rb = tb.Radiobutton(
             self._mode_frame, text='绝对', variable=self.mode_var,
-            value='absolute', bootstyle='info-outline-toolbutton',
+            value='absolute',
             command=self._on_mode_change,
         )
         self._abs_rb.pack(side=LEFT)
 
         self._rel_rb = tb.Radiobutton(
             self._mode_frame, text='相对', variable=self.mode_var,
-            value='relative', bootstyle='info-outline-toolbutton',
+            value='relative',
             command=self._on_mode_change,
         )
         self._rel_rb.pack(side=LEFT)
@@ -345,7 +341,6 @@ class DateTimePicker(tb.Frame):
             sb = tb.Spinbox(
                 f, from_=-999, to=999, width=5,
                 textvariable=var, format='%d',
-                bootstyle='secondary',
             )
             sb.pack(side=LEFT)
 
@@ -643,7 +638,7 @@ class StatusBar(tb.Frame):
         # Stats label
         self.stats_var = tk.StringVar(value='已处理 0/0，成功 0，失败 0')
         self.stats_label = tb.Label(self, textvariable=self.stats_var,
-                                    font=('Segoe UI', 10), bootstyle='inverse-secondary')
+                                    font=('Segoe UI', 10))
         self.stats_label.pack(side=LEFT, padx=(10, 5))
 
     def set_progress(self, value: float, maximum: float = 100):

@@ -163,22 +163,22 @@ class FolderTimeEditor(tb.Window):
         toolbar.pack(fill=X, padx=5, pady=(5, 2))
 
         tb.Button(
-            toolbar, text='📁  添加文件夹', bootstyle='secondary-outline',
+            toolbar, text='📁  添加文件夹',
             command=self._add_folder, width=16,
         ).pack(side=LEFT, padx=2)
 
         tb.Button(
-            toolbar, text='📄  添加文件', bootstyle='secondary-outline',
+            toolbar, text='📄  添加文件',
             command=self._add_file, width=16,
         ).pack(side=LEFT, padx=2)
 
         tb.Button(
-            toolbar, text='🗑  移除选中', bootstyle='danger-outline',
+            toolbar, text='🗑  移除选中',
             command=self._remove_selected, width=12,
         ).pack(side=LEFT, padx=2)
 
         tb.Button(
-            toolbar, text='🧹  清空', bootstyle='secondary-outline',
+            toolbar, text='🧹  清空',
             command=self._clear_list, width=8,
         ).pack(side=LEFT, padx=2)
 
@@ -221,7 +221,6 @@ class FolderTimeEditor(tb.Window):
         self._sync_var = tk.BooleanVar(value=False)
         sync_cb = tb.Checkbutton(
             settings_frame, text='同步所有时间', variable=self._sync_var,
-            bootstyle='info-outline',
             command=self._on_sync_toggle,
         )
         sync_cb.pack(anchor=W, pady=(0, 10))
@@ -250,12 +249,12 @@ class FolderTimeEditor(tb.Window):
         apply_frame.pack(fill=X, padx=5, pady=10)
 
         tb.Button(
-            apply_frame, text='应用到选中', bootstyle='info',
+            apply_frame, text='应用到选中',
             command=self._apply_to_selected, width=18,
         ).pack(side=LEFT, padx=2)
 
         tb.Button(
-            apply_frame, text='应用到全部', bootstyle='info-outline',
+            apply_frame, text='应用到全部',
             command=self._apply_to_all, width=18,
         ).pack(side=LEFT, padx=2)
 
@@ -264,19 +263,19 @@ class FolderTimeEditor(tb.Window):
         op_frame.pack(fill=X, padx=5, pady=5)
 
         preview_btn = tb.Button(
-            op_frame, text='🔍  预览修改', bootstyle='secondary-outline',
+            op_frame, text='🔍  预览修改',
             command=self._preview_changes, width=25,
         )
         preview_btn.pack(fill=X, pady=2)
 
         self._apply_btn = tb.Button(
-            op_frame, text='✅  执行修改', bootstyle='primary',
+            op_frame, text='✅  执行修改',
             command=self._apply_changes, width=25,
         )
         self._apply_btn.pack(fill=X, pady=2)
 
         self._undo_btn = tb.Button(
-            op_frame, text='↩  撤销上次', bootstyle='danger',
+            op_frame, text='↩  撤销上次',
             command=self._undo_changes, width=25,
             state=DISABLED,
         )
@@ -287,12 +286,12 @@ class FolderTimeEditor(tb.Window):
         profile_frame.pack(fill=X, padx=5, pady=5)
 
         tb.Button(
-            profile_frame, text='💾  保存时间方案', bootstyle='success-outline',
+            profile_frame, text='💾  保存时间方案',
             command=self._save_profile, width=25,
         ).pack(fill=X, pady=2)
 
         tb.Button(
-            profile_frame, text='📂  加载时间方案', bootstyle='info-outline',
+            profile_frame, text='📂  加载时间方案',
             command=self._load_profile, width=25,
         ).pack(fill=X, pady=2)
 

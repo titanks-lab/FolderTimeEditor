@@ -94,9 +94,9 @@ class PreviewDialog(tb.Toplevel):
         btn_frame = tb.Frame(self)
         btn_frame.pack(fill=X, padx=10, pady=(0, 10))
 
-        tb.Button(btn_frame, text='取消', bootstyle='secondary',
+        tb.Button(btn_frame, text='取消',
                   command=self.destroy, width=12).pack(side=RIGHT, padx=2)
-        tb.Button(btn_frame, text='执行修改', bootstyle='primary',
+        tb.Button(btn_frame, text='执行修改',
                   command=self._apply, width=12).pack(side=RIGHT, padx=2)
 
     def _populate(self):
@@ -194,14 +194,14 @@ class ProfileDialog(tb.Toplevel):
         btn_frame = tb.Frame(self)
         btn_frame.pack(fill=X, padx=10, pady=(5, 10))
 
-        tb.Button(btn_frame, text='保存当前方案', bootstyle='success-outline',
+        tb.Button(btn_frame, text='保存当前方案',
                   command=self._save_profile, width=16).pack(side=LEFT, padx=2)
-        tb.Button(btn_frame, text='加载选中方案', bootstyle='primary',
+        tb.Button(btn_frame, text='加载选中方案',
                   command=self._load_selected, width=16).pack(side=LEFT, padx=2)
-        tb.Button(btn_frame, text='删除选中', bootstyle='danger-outline',
+        tb.Button(btn_frame, text='删除选中',
                   command=self._delete_selected, width=12).pack(side=LEFT, padx=2)
 
-        tb.Button(btn_frame, text='关闭', bootstyle='secondary',
+        tb.Button(btn_frame, text='关闭',
                   command=self.destroy, width=10).pack(side=RIGHT, padx=2)
 
     def _refresh_list(self):
