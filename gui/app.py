@@ -221,7 +221,7 @@ class FolderTimeEditor(tb.Window):
         self._sync_var = tk.BooleanVar(value=False)
         sync_cb = tb.Checkbutton(
             settings_frame, text='同步所有时间', variable=self._sync_var,
-            bootstyle='info-outline-toolbutton',
+            bootstyle='info-outline',
             command=self._on_sync_toggle,
         )
         sync_cb.pack(anchor=W, pady=(0, 10))
