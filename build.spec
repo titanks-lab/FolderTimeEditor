@@ -21,7 +21,16 @@ import sys
 import shutil
 
 # ── 项目根路径 ──────────────────────────────────────
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+_SPEC_FILE = os.environ.get('PYINSTALLER_SPEC_FILE', '')
+if _SPEC_FILE:
+    # PyInstaller 7+ passes the spec path via env
+    ROOT_DIR = os.path.dirname(os.path.abspath(_SPEC_FILE))
+elif '__file__' in dir():
+    # Local execution: __file__ is defined
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+else:
+    # Fallback: assume CWD is project root (standard pyinstaller invocation)
+    ROOT_DIR = os.path.abspath('.')
 
 # ── 检测 UPX 是否可用 ──────────────────────────────
 _has_upx = False
