@@ -94,6 +94,30 @@ def main():
     log_path = None
 
     try:
+        # ── Show splash for instant user feedback ──
+        _splash = None
+        try:
+            import tkinter as _tk
+            _splash = _tk.Tk()
+            _splash.title('')
+            _splash.overrideredirect(True)
+            _splash.geometry('300x80+{}+{}'.format(
+                (_splash.winfo_screenwidth() - 300) // 2,
+                (_splash.winfo_screenheight() - 80) // 2
+            ))
+            _splash.configure(bg='#1a1a2e')
+            _tk.Label(
+                _splash, text='FolderTimeEditor', fg='#e94560',
+                bg='#1a1a2e', font=('Segoe UI', 14, 'bold')
+            ).pack(pady=(12, 0))
+            _tk.Label(
+                _splash, text='正在加载...', fg='#aaaaaa',
+                bg='#1a1a2e', font=('Segoe UI', 10)
+            ).pack()
+            _splash.update()
+        except Exception:
+            _splash = None
+
         # Ensure the project root is on the path (for source runs)
         if not _is_frozen():
             _project_root = os.path.dirname(os.path.abspath(__file__))
@@ -103,6 +127,12 @@ def main():
         # Import and launch the app
         from gui.app import FolderTimeEditor
         app = FolderTimeEditor()
+
+        # Close splash when main window is ready
+        if _splash:
+            _splash.destroy()
+            _splash = None
+
         app.mainloop()
 
     except ImportError as e:
