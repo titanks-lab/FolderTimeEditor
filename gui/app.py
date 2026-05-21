@@ -137,7 +137,7 @@ class FolderTimeEditor(tb.Window):
     def _build_main_layout(self):
         """Build the main content area with left/right or top/bottom panels."""
         # Main horizontal paned window
-        self._paned = tb.PanedWindow(self, orient=HORIZONTAL)
+        self._paned = tb.Panedwindow(self, orient=HORIZONTAL)
         self._paned.pack(fill=BOTH, expand=True, padx=5, pady=5)
 
         # ── Left: file/folder list ──
