@@ -1,0 +1,56 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+        pip install pyinstaller
+    
+    - name: Build standalone EXE
+      run: |
+        pyinstaller build.spec
+    
+    - name: Upload EXE artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: FolderTimeEditor
+        path: dist/FolderTimeEditor.exe
+    
+    - name: Create Release
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/FolderTimeEditor.exe
+        body: |
+          ## FolderTimeEditor v1.0.0
+          
+          文件夹/文件时间属性批量修改工具
+          
+          ### 功能特性
+          - 批量修改创建时间/修改时间/访问时间
+          - 绝对时间设置 + 相对时间调整
+          - 递归处理子目录
+          - 预览修改 + 一键撤销
+          - 拖拽支持
+          - 时间方案保存/加载

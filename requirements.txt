@@ -1,0 +1,9 @@
+# FolderTimeEditor 依赖清单
+# 运行依赖
+ttkbootstrap>=1.10.0
+
+# 打包依赖
+pyinstaller>=6.0.0
+
+# 可选：图标处理
+Pillow>=10.0.0
