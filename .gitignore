@@ -25,3 +25,4 @@ Thumbs.db
 .env
 venv/
 .venv/
+file_version_info.txt
