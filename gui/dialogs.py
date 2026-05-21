@@ -176,7 +176,7 @@ class ProfileDialog(tb.Toplevel):
 
     def _build_ui(self):
         # Top frame: list of profiles
-        top = tb.LabelFrame(self, text='已保存的方案', padding=5)
+        top = tb.LabelFrame(self, text='已保存的方案')
         top.pack(fill=BOTH, expand=True, padx=10, pady=(10, 5))
 
         self.profile_listbox = tk.Listbox(top, font=('Segoe UI', 10),
