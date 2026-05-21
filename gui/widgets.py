@@ -344,7 +344,7 @@ class DateTimePicker(tb.Frame):
             tb.Label(f, text=label, font=('Segoe UI', 9)).pack(side=LEFT)
             sb = tb.Spinbox(
                 f, from_=-999, to=999, width=5,
-                textvariable=var, format=fmt,
+                textvariable=var, format='%d',
                 bootstyle='secondary',
             )
             sb.pack(side=LEFT)
@@ -463,7 +463,6 @@ class PathTreeView(tb.Frame):
             columns=list(self.COLUMNS),
             show='headings',
             selectmode='extended',
-            bootstyle='primary',
         )
 
         # Scrollbars

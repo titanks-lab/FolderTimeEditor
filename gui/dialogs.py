@@ -166,9 +166,7 @@ class ProfileDialog(tb.Toplevel):
         h = self.winfo_height()
         self.geometry(f'+{px + (pw - w) // 2}+{py + (ph - h) // 2}')
 
-        self._profiles_dir = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), 'profiles'
-        )
+        self._profiles_dir = os.path.join(os.path.expanduser('~'), '.folder-time-editor', 'profiles')
         os.makedirs(self._profiles_dir, exist_ok=True)
 
         self._build_ui()
@@ -221,7 +219,7 @@ class ProfileDialog(tb.Toplevel):
         return os.path.join(self._profiles_dir, name)
 
     def _save_profile(self):
-        name = tb.dialogs.Querybox('请输入方案名称：', title='保存方案')
+        name = tb.dialogs.Querybox.get_string('请输入方案名称：', title='保存方案')
         if not name:
             return
         path = self._get_profile_path(name)
@@ -236,13 +234,13 @@ class ProfileDialog(tb.Toplevel):
                     self.profile_listbox.selection_set(idx)
                     break
         except Exception as e:
-            tb.dialogs.show_error(title='保存失败',
+            tb.dialogs.Messagebox.show_error(title='保存失败',
                                   message=f'无法保存方案：{e}')
 
     def _load_selected(self):
         sel = self.profile_listbox.curselection()
         if not sel:
-            tb.dialogs.show_message(title='提示', message='请先选择一个方案',
+            tb.dialogs.Messagebox.show_info(title='提示', message='请先选择一个方案',
                                     alert=True)
             return
         name = self.profile_listbox.get(sel[0])
@@ -252,7 +250,7 @@ class ProfileDialog(tb.Toplevel):
                 self.result_settings = json.load(f)
             self.destroy()
         except Exception as e:
-            tb.dialogs.show_error(title='加载失败',
+            tb.dialogs.Messagebox.show_error(title='加载失败',
                                   message=f'无法加载方案：{e}')
 
     def _delete_selected(self):
@@ -260,7 +258,7 @@ class ProfileDialog(tb.Toplevel):
         if not sel:
             return
         name = self.profile_listbox.get(sel[0])
-        confirm = tb.dialogs.show_question(
+        confirm = tb.dialogs.Messagebox.show_question(
             title='确认删除',
             message=f'确定要删除方案 "{name}" 吗？',
         )
@@ -270,5 +268,5 @@ class ProfileDialog(tb.Toplevel):
                 os.remove(path)
                 self._refresh_list()
             except Exception as e:
-                tb.dialogs.show_error(title='删除失败',
+                tb.dialogs.Messagebox.show_error(title='删除失败',
                                       message=f'无法删除方案：{e}')

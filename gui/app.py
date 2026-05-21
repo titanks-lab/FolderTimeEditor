@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 
-from core.timestamp_handler import TimestampHandler
+from core.timestamp_handler import TimestampHandler, FileTimes
 
 from .dialogs import PreviewDialog, ProfileDialog
 from .widgets import (
@@ -38,7 +38,7 @@ class FolderTimeEditor(tb.Window):
 
         # ── platform check ──
         if sys.platform != 'win32':
-            tb.dialogs.show_question(
+            tb.dialogs.Messagebox.show_question(
                 title='平台提示',
                 message='此工具仅支持 Windows 平台。\n当前系统：' + sys.platform,
             )
@@ -398,7 +398,7 @@ class FolderTimeEditor(tb.Window):
     def _add_single_path(self, path: str):
         """Add a single path to the tree."""
         try:
-            info = self.handler.get_file_info(path)
+            info = self.handler.get_times(path)
             item = {
                 'name': info.name,
                 'path': info.path,
@@ -513,7 +513,7 @@ class FolderTimeEditor(tb.Window):
         """Apply time settings to selected items (preview + execute flow)."""
         selected = self.path_tree.get_selected()
         if not selected:
-            tb.dialogs.show_message(title='提示', message='请先选择要修改的项目',
+            tb.dialogs.Messagebox.show_info(title='提示', message='请先选择要修改的项目',
                                     alert=True)
             return
 
@@ -523,7 +523,7 @@ class FolderTimeEditor(tb.Window):
     def _apply_to_all(self):
         """Apply time settings to all items."""
         if self.path_tree.item_count() == 0:
-            tb.dialogs.show_message(title='提示', message='列表为空，请先添加文件或文件夹',
+            tb.dialogs.Messagebox.show_info(title='提示', message='列表为空，请先添加文件或文件夹',
                                     alert=True)
             return
 
@@ -534,37 +534,16 @@ class FolderTimeEditor(tb.Window):
         """Core apply logic with preview dialog."""
         deltas = self._get_deltas_for_apply()
         if not any(v is not None for v in deltas.values()):
-            tb.dialogs.show_message(title='提示', message='请至少启用一个时间设置',
+            tb.dialogs.Messagebox.show_info(title='提示', message='请至少启用一个时间设置',
                                     alert=True)
             return
 
-        # Build items for handler
-        items = [self.handler.get_file_info(p) for p in paths]
-
-        # Generate preview
-        plans = self.handler.preview(
-            items,
-            creation_delta=deltas.get('creation'),
-            modification_delta=deltas.get('modification'),
-            access_delta=deltas.get('access'),
-        )
-
-        # Show preview dialog
-        changes = []
-        for plan in plans:
-            changes.append({
-                'path': plan.path,
-                'old_creation': plan.old_creation,
-                'new_creation': plan.new_creation,
-                'old_modification': plan.old_modification,
-                'new_modification': plan.new_modification,
-                'old_access': plan.old_access,
-                'new_access': plan.new_access,
-            })
+        # Build changes list from current times + deltas
+        changes = self._build_changes(paths, deltas)
 
         dlg = PreviewDialog(self, changes)
         if dlg.result:
-            self._execute_changes(plans, scope)
+            self._execute_changes(changes, scope)
 
     def _execute_changes(self, plans, scope: str):
         """Execute the changes in a background thread."""
@@ -587,13 +566,19 @@ class FolderTimeEditor(tb.Window):
         failed = 0
         last_plan_data = []
 
-        for idx, plan in enumerate(plans):
-            success = self.handler.apply_plan(plan)
+        for idx, change in enumerate(plans):
+            path = change['path']
+            new_times = FileTimes(
+                creation_time=change.get('new_creation'),
+                last_write_time=change.get('new_modification'),
+                last_access_time=change.get('new_access'),
+            )
+            success = self.handler.set_times(path, new_times)
             if success:
                 succeeded += 1
             else:
                 failed += 1
-                self.log.error(f'失败：{os.path.basename(plan.path)}')
+                self.log.error(f'失败：{os.path.basename(path)}')
 
             # Update progress and stats (via thread-safe call)
             self.after(0, self._update_progress, idx + 1, total, succeeded, failed)
@@ -601,25 +586,25 @@ class FolderTimeEditor(tb.Window):
             # Store for undo
             if not success:
                 last_plan_data.append({
-                    'path': plan.path,
-                    'old_creation': plan.old_creation,
+                    'path': path,
+                    'old_creation': change.get('old_creation'),
                     'new_creation': None,
-                    'old_modification': plan.old_modification,
+                    'old_modification': change.get('old_modification'),
                     'new_modification': None,
-                    'old_access': plan.old_access,
+                    'old_access': change.get('old_access'),
                     'new_access': None,
                 })
 
         # Done
         self._last_plan = [{
-            'path': p.path,
-            'old_creation': p.old_creation,
-            'new_creation': p.new_creation,
-            'old_modification': p.old_modification,
-            'new_modification': p.new_modification,
-            'old_access': p.old_access,
-            'new_access': p.new_access,
-        } for p in plans]
+            'path': c['path'],
+            'old_creation': c.get('old_creation'),
+            'new_creation': c.get('new_creation'),
+            'old_modification': c.get('old_modification'),
+            'new_modification': c.get('new_modification'),
+            'old_access': c.get('old_access'),
+            'new_access': c.get('new_access'),
+        } for c in plans]
 
         self.after(0, self._on_execute_done, total, succeeded, failed)
 
@@ -637,7 +622,7 @@ class FolderTimeEditor(tb.Window):
         else:
             self.log.warning(f'执行完成：成功 {succeeded}，失败 {failed}（共 {total} 项）')
 
-        tb.dialogs.show_message(
+        tb.dialogs.Messagebox.show_info(
             title='操作完成',
             message=f'成功：{succeeded} 项\n失败：{failed} 项\n总计：{total} 项',
         )
@@ -663,10 +648,10 @@ class FolderTimeEditor(tb.Window):
     def _undo_changes(self):
         """Undo the last batch of changes."""
         if not self._undo_available or not self._last_plan:
-            tb.dialogs.show_message(title='提示', message='没有可撤销的修改')
+            tb.dialogs.Messagebox.show_info(title='提示', message='没有可撤销的修改')
             return
 
-        confirm = tb.dialogs.show_question(
+        confirm = tb.dialogs.Messagebox.show_question(
             title='确认撤销',
             message=f'确定要撤销上次修改（共 {len(self._last_plan)} 项）吗？',
         )
@@ -686,12 +671,12 @@ class FolderTimeEditor(tb.Window):
                 self.log.error(f'撤销失败（路径不存在）：{os.path.basename(path)}')
                 continue
 
-            success = self.handler.apply_timestamps(
-                path=path,
+            new_times = FileTimes(
                 creation_time=change['old_creation'],
-                modification_time=change['old_modification'],
-                access_time=change['old_access'],
+                last_write_time=change['old_modification'],
+                last_access_time=change['old_access'],
             )
+            success = self.handler.set_times(path, new_times)
             if success:
                 succeeded += 1
             else:
@@ -793,33 +778,17 @@ class FolderTimeEditor(tb.Window):
             scope = '全部'
 
         if not paths:
-            tb.dialogs.show_message(title='提示', message='列表为空，请先添加文件或文件夹',
+            tb.dialogs.Messagebox.show_info(title='提示', message='列表为空，请先添加文件或文件夹',
                                     alert=True)
             return
 
         deltas = self._get_deltas_for_apply()
         if not any(v is not None for v in deltas.values()):
-            tb.dialogs.show_message(title='提示', message='请至少启用一个时间设置',
+            tb.dialogs.Messagebox.show_info(title='提示', message='请至少启用一个时间设置',
                                     alert=True)
             return
 
-        items = [self.handler.get_file_info(p) for p in paths]
-        plans = self.handler.preview(items, **{
-            f'{k}_delta': v for k, v in deltas.items()
-        })
-
-        changes = []
-        for plan in plans:
-            changes.append({
-                'path': plan.path,
-                'old_creation': plan.old_creation,
-                'new_creation': plan.new_creation,
-                'old_modification': plan.old_modification,
-                'new_modification': plan.new_modification,
-                'old_access': plan.old_access,
-                'new_access': plan.new_access,
-            })
-
+        changes = self._build_changes(paths, deltas)
         PreviewDialog(self, changes, title=f'预览修改（{scope}）')
         self.log.info(f'预览完成：{len(changes)} 项将被修改')
 
@@ -831,17 +800,17 @@ class FolderTimeEditor(tb.Window):
         """Directly apply changes without preview (uses confirm dialog)."""
         paths = self.path_tree.get_paths()
         if not paths:
-            tb.dialogs.show_message(title='提示', message='列表为空，请先添加文件或文件夹',
+            tb.dialogs.Messagebox.show_info(title='提示', message='列表为空，请先添加文件或文件夹',
                                     alert=True)
             return
 
         deltas = self._get_deltas_for_apply()
         if not any(v is not None for v in deltas.values()):
-            tb.dialogs.show_message(title='提示', message='请至少启用一个时间设置',
+            tb.dialogs.Messagebox.show_info(title='提示', message='请至少启用一个时间设置',
                                     alert=True)
             return
 
-        confirm = tb.dialogs.show_question(
+        confirm = tb.dialogs.Messagebox.show_question(
             title='确认执行',
             message=f'确定要对 {len(paths)} 个项目执行时间修改吗？\n\n'
                     '建议先点击"预览修改"确认变更内容。',
@@ -849,11 +818,8 @@ class FolderTimeEditor(tb.Window):
         if not confirm:
             return
 
-        items = [self.handler.get_file_info(p) for p in paths]
-        plans = self.handler.preview(items, **{
-            f'{k}_delta': v for k, v in deltas.items()
-        })
-        self._execute_changes(plans, '全部')
+        changes = self._build_changes(paths, deltas)
+        self._execute_changes(changes, '全部')
 
     # ═════════════════════════════════════════════════════════════════════
     # Helpers
@@ -863,8 +829,64 @@ class FolderTimeEditor(tb.Window):
         """Handle Escape key."""
         pass
 
+
+    def _build_changes(self, paths, deltas):
+        """Build a list of change dicts from paths and time deltas.
+        
+        Each change dict: {path, old_creation/new_creation, old_modification/new_modification, 
+                           old_access/new_access}
+        """
+        changes = []
+        for path in paths:
+            times = self.handler.get_times(path)
+            if times is None:
+                continue
+            old_creation = times.creation_time
+            old_mod = times.last_write_time
+            old_access = times.last_access_time
+
+            new_creation = old_creation
+            new_mod = old_mod
+            new_access = old_access
+
+            delta_c = deltas.get('creation')
+            delta_m = deltas.get('modification')
+            delta_a = deltas.get('access')
+
+            if delta_c is not None:
+                val, is_abs = delta_c
+                if is_abs:
+                    new_creation = datetime.fromtimestamp(val)
+                else:
+                    new_creation = old_creation + timedelta(seconds=val) if old_creation else None
+
+            if delta_m is not None:
+                val, is_abs = delta_m
+                if is_abs:
+                    new_mod = datetime.fromtimestamp(val)
+                else:
+                    new_mod = old_mod + timedelta(seconds=val) if old_mod else None
+
+            if delta_a is not None:
+                val, is_abs = delta_a
+                if is_abs:
+                    new_access = datetime.fromtimestamp(val)
+                else:
+                    new_access = old_access + timedelta(seconds=val) if old_access else None
+
+            changes.append({
+                'path': path,
+                'old_creation': old_creation,
+                'new_creation': new_creation,
+                'old_modification': old_mod,
+                'new_modification': new_mod,
+                'old_access': old_access,
+                'new_access': new_access,
+            })
+        return changes
+
     def _show_about(self):
-        tb.dialogs.show_message(
+        tb.dialogs.Messagebox.show_info(
             title='关于 FolderTimeEditor',
             message=(
                 'FolderTimeEditor v1.0\n'
