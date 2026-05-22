@@ -35,7 +35,7 @@ jobs:
 
     - name: Package as ZIP
       run: |
-        Compress-Archive -Path src-tauri/target/release/FolderTimeEditor.exe -DestinationPath FolderTimeEditor-Tauri.zip -Force
+        Compress-Archive -Path src-tauri/target/release/folder-time-editor.exe -DestinationPath FolderTimeEditor-Tauri.zip -Force
 
     - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
