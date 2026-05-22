@@ -128,7 +128,7 @@ fn collect_entries(
             }
         };
 
-        results.push(info);
+        results.push(info.clone());
 
         // 递归进入子目录
         if recursive && info.is_dir {
