@@ -90,7 +90,7 @@ async function executeChanges(selectedOnly: boolean = true) {
     try {
       if (selectedOnly) {
         // 读取当前时间，只覆盖启用的
-        const _current = await invoke<FileTimes>('get_file_times', { path })
+        await invoke<FileTimes>('get_file_times', { path })
         await invoke('set_file_times', {
           path,
           times: {
@@ -101,7 +101,7 @@ async function executeChanges(selectedOnly: boolean = true) {
         })
       } else {
         // 应用到全部
-        const _current = await invoke<FileTimes>('get_file_times', { path })
+        await invoke<FileTimes>('get_file_times', { path })
         await invoke('set_file_times', {
           path,
           times: {
