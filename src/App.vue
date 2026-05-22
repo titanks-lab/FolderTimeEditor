@@ -91,7 +91,6 @@ function stopResize() {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  height: 100dvh;
   overflow: hidden;
 }
 
@@ -119,32 +118,28 @@ function stopResize() {
 
 .main-content {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1;
   overflow: hidden;
-  min-height: 100px;
-  background: var(--bg-secondary, #ffffff);
+  min-height: 200px;
 }
 
 .panel {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
   min-width: 200px;
-  background: var(--bg-secondary, #f0f0f0);
 }
 
 .left-panel {
-  flex: 0 0 auto;
   width: 500px;
   min-width: 300px;
   max-width: 800px;
   border-right: 1px solid var(--border-color);
-  background: var(--bg-secondary, #ffffff);
-  resize: horizontal;
+  overflow: auto;
 }
 
 .right-panel {
-  flex: 1 1 auto;
+  flex: 1;
   min-width: 250px;
   overflow-y: auto;
 }
