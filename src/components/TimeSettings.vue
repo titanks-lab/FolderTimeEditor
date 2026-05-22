@@ -153,9 +153,7 @@ async function applyToAll() {
   await executeChanges(false)
 }
 
-async function undo() {
-  store.addLog('撤销功能：当前版本暂未实现文件时间回滚')
-}
+
 
 function saveProfile() {
   const name = prompt('请输入方案名称：')
@@ -165,18 +163,7 @@ function saveProfile() {
   store.addLog(`已保存方案: ${name}`)
 }
 
-function loadProfile(index: number) {
-  const profile = store.profiles[index]
-  if (!profile) return
 
-  settings.creation = { ...profile.settings.creation }
-  settings.modification = { ...profile.settings.modification }
-  settings.access = { ...profile.settings.access }
-  settings.owner_enabled = profile.settings.owner_enabled
-  settings.owner = profile.settings.owner
-
-  store.addLog(`已加载方案: ${profile.name}`)
-}
 </script>
 
 <template>
