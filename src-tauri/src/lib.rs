@@ -13,6 +13,7 @@ fn greet(name: &str) -> String {
 
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             greet,
             file_times::get_file_times,
