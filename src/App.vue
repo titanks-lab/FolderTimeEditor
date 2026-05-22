@@ -30,7 +30,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('mouseup', stopResize)
 })
 
-function startResize(e: MouseEvent) {
+function startResize(_e: MouseEvent) {
   isResizing.value = true
   resizer.value?.classList.add('active')
   document.body.style.cursor = 'col-resize'

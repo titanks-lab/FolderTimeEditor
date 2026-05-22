@@ -53,7 +53,7 @@ function handleClose() {
 
       <div class="modal-footer">
         <button class="btn" @click="handleClose">取消</button>
-        <button class="btn btn-success" @click="executeChanges(true); handleClose()">确认执行</button>
+        <button class="btn btn-success" @click="$emit('confirm'); handleClose()">确认执行</button>
       </div>
     </div>
   </div>

@@ -35,7 +35,7 @@ async function previewChanges() {
 
   for (const path of paths) {
     try {
-      const currentTimes = await invoke<FileTimes>('get_file_times', { path })
+      const _currentTimes = await invoke<FileTimes>('get_file_times', { path })
 
       if (settings.creation.enabled) {
         const newVal = buildTimestamp(settings.creation)
@@ -56,7 +56,7 @@ async function previewChanges() {
         }
       }
       if (settings.owner_enabled && settings.owner) {
-        const currentOwner = store.fileItems.find(f => f.path === path)?.owner || ''
+        const _currentOwner = store.fileItems.find(f => f.path === path)?.owner || ''
         if (currentOwner !== settings.owner) {
           changes.push({ path, attribute: '所有者', old_value: currentOwner || '(未知)', new_value: settings.owner })
         }
@@ -90,7 +90,7 @@ async function executeChanges(selectedOnly: boolean = true) {
     try {
       if (selectedOnly) {
         // 读取当前时间，只覆盖启用的
-        const current = await invoke<FileTimes>('get_file_times', { path })
+        const _current = await invoke<FileTimes>('get_file_times', { path })
         await invoke('set_file_times', {
           path,
           times: {
@@ -101,7 +101,7 @@ async function executeChanges(selectedOnly: boolean = true) {
         })
       } else {
         // 应用到全部
-        const current = await invoke<FileTimes>('get_file_times', { path })
+        const _current = await invoke<FileTimes>('get_file_times', { path })
         await invoke('set_file_times', {
           path,
           times: {
