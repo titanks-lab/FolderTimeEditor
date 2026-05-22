@@ -19,7 +19,7 @@ watch(() => store.logMessages.length, async () => {
 </script>
 
 <template>
-  <div class="operation-log">
+  <div class="operation-log" style="height: 30vh; flex-shrink: 0;">
     <div class="log-header">
       <span class="log-title">📋 操作日志</span>
       <div class="log-stats">

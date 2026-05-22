@@ -12,7 +12,7 @@ function buildTimestamp(ts: { date: string; time: string }): number | null {
   const time = ts.time || '00:00'
   const [y, m, d] = ts.date.split('-').map(Number)
   const [h, min] = time.split(':').map(Number)
-  return Math.floor(Date.UTC(y, m - 1, d, h, min) / 1000)
+  return Math.floor(new Date(y, m - 1, d, h, min).getTime() / 1000)
 }
 
 function formatTimestamp(ts: number | null): string {
@@ -157,7 +157,6 @@ function loadProfile(index: number) {
   settings.creation = { ...profile.settings.creation }
   settings.modification = { ...profile.settings.modification }
   settings.access = { ...profile.settings.access }
-  settings.sync = profile.settings.sync
   settings.owner_enabled = profile.settings.owner_enabled
   settings.owner = profile.settings.owner
 
@@ -167,14 +166,6 @@ function loadProfile(index: number) {
 
 <template>
   <div class="time-settings">
-    <!-- 同步选项 -->
-    <div class="section mb-4">
-      <label class="setting-row">
-        <input type="checkbox" v-model="settings.sync">
-        <span>同步所有时间</span>
-      </label>
-    </div>
-
     <!-- 创建时间 -->
     <div class="section mb-4">
       <label class="setting-row">

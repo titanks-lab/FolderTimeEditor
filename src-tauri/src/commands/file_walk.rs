@@ -90,6 +90,10 @@ pub fn walk_directory(path: String, recursive: bool) -> Result<Vec<FileInfo>, St
     }
 
     let mut results = Vec::new();
+    // 先添加根目录自身
+    if let Ok(info) = file_info_from_path(&dir_path) {
+        results.push(info.clone());
+    }
     collect_entries(&dir_path, recursive, &mut results)?;
     Ok(results)
 }
