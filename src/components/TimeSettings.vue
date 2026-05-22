@@ -155,13 +155,6 @@ async function applyToAll() {
 
 
 
-function saveProfile() {
-  const name = prompt('请输入方案名称：')
-  if (!name) return
-
-  store.addProfile(name, settings)
-  store.addLog(`已保存方案: ${name}`)
-}
 
 
 </script>
