@@ -57,8 +57,8 @@ function stopResize() {
   <div class="app-layout">
     <!-- 顶部工具栏 -->
     <header class="app-header">
-      <h1 class="app-title">🕑 FolderTimeEditor</h1>
-      <span class="app-subtitle">文件时间属性编辑器</span>
+      <h1 class="app-title">🕑 YT-FileTimeEditor</h1>
+      <span class="app-subtitle">文件时间编辑器</span>
     </header>
 
     <!-- 主内容区 -->

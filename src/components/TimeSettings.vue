@@ -112,6 +112,21 @@ async function executeChanges(selectedOnly: boolean = true) {
         })
       }
 
+      // 如果访问时间也启用了，额外单独设置一次（解决 NtfsDisableLastAccessUpdate 策略问题）
+      if (settings.access.enabled) {
+        const accessTs = buildTimestamp(settings.access)
+        if (accessTs !== null) {
+          await invoke('set_file_times', {
+            path,
+            times: {
+              creation_time: null,
+              last_write_time: null,
+              last_access_time: accessTs,
+            },
+          })
+        }
+      }
+
       if (settings.owner_enabled && settings.owner) {
         await invoke('set_file_owner', { path, owner: settings.owner })
       }
@@ -215,34 +230,10 @@ function loadProfile(index: number) {
 
     <!-- 操作按钮 -->
     <div class="action-buttons">
-      <button class="btn btn-primary" @click="applyToSelected" :disabled="store.getSelectedPaths().length === 0">
-        应用到选中 ({{ store.getSelectedPaths().length }})
-      </button>
-      <button class="btn btn-success" @click="applyToAll" :disabled="store.fileItems.length === 0">
-        应用到全部
-      </button>
-    </div>
-
-    <div class="action-buttons mt-2">
-      <button class="btn btn-warning" @click="previewChanges">
-        👁 预览修改
-      </button>
-      <button class="btn btn-success" @click="executeChanges(true)" :disabled="store.getSelectedPaths().length === 0">
-        ▶ 执行修改
-      </button>
-      <button class="btn" @click="undo">
-        ↩ 撤销
-      </button>
-    </div>
-
-    <div class="action-buttons mt-2">
-      <button class="btn" @click="saveProfile">
-        💾 保存方案
-      </button>
-      <select v-if="store.profiles.length > 0" class="input" style="flex:1; min-width:120px" @change="loadProfile(Number(($event.target as HTMLSelectElement).value))">
-        <option value="">- 加载方案 -</option>
-        <option v-for="(p, i) in store.profiles" :key="i" :value="i">{{ p.name }}</option>
-      </select>
+      <button class="btn btn-primary" @click="applyToSelected" :disabled="store.getSelectedPaths().length === 0">应用到选中 ({{ store.getSelectedPaths().length }})</button>
+      <button class="btn btn-success" @click="applyToAll" :disabled="store.fileItems.length === 0">应用到全部</button>
+      <button class="btn btn-warning" @click="previewChanges">预览修改</button>
+      <button class="btn btn-success" @click="executeChanges(true)" :disabled="store.getSelectedPaths().length === 0">执行修改</button>
     </div>
   </div>
 </template>

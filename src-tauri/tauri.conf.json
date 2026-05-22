@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-config-schema/schema.json",
-  "productName": "FolderTimeEditor",
+  "productName": "YT-FileTimeEditor",
   "version": "2.0.0",
   "identifier": "com.foldertimeeditor.app",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "FolderTimeEditor v2.0 - 文件夹时间批量修改工具",
+        "title": "YT-FileTimeEditor - 文件时间编辑器",
         "width": 1000,
         "height": 700,
         "minWidth": 900,
