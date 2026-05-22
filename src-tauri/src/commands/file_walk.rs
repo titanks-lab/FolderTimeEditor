@@ -1,22 +1,68 @@
-use super::{to_wide, filetime_to_unix, unix_to_filetime};
+use super::{to_wide, filetime_to_unix, unix_to_filetime, FILETIME};
 use serde::{Deserialize, Serialize};
+use std::ffi::c_void;
 use std::fs;
 use std::path::Path;
-use windows::core::PCWSTR;
-use windows::Win32::Foundation::{HANDLE, HLOCAL, LocalFree};
-use windows::Win32::Security::Authorization::{
-    ConvertSidToStringSidW, ConvertStringSidToSidW,
-};
-use windows::Win32::Security::{
-    GetNamedSecurityInfoW, OWNER_SECURITY_INFORMATION, SE_FILE_OBJECT,
-    SetNamedSecurityInfoW,
-};
-use windows::Win32::Storage::FileSystem::{
-    CreateFileW, FILE_FLAG_BACKUP_SEMANTICS, FILE_SHARE_READ, FILE_SHARE_WRITE,
-    GENERIC_READ, OPEN_EXISTING,
-};
 
-/// 文件或目录的信息
+// HANDLE / HLOCAL 类型
+type HANDLE = isize;
+type HLOCAL = *mut c_void;
+
+// Win32 常量
+const GENERIC_READ: u32 = 0x80000000;
+const FILE_SHARE_READ: u32 = 0x00000001;
+const FILE_SHARE_WRITE: u32 = 0x00000002;
+const OPEN_EXISTING: u32 = 3;
+const FILE_FLAG_BACKUP_SEMANTICS: u32 = 0x02000000;
+
+// Security constants
+const SE_FILE_OBJECT: u32 = 1;
+const OWNER_SECURITY_INFORMATION: u32 = 0x00000001;
+
+// FFI 声明 Win32 API
+extern "system" {
+    fn CreateFileW(
+        lpFileName: *const u16,
+        dwDesiredAccess: u32,
+        dwShareMode: u32,
+        lpSecurityAttributes: *const c_void,
+        dwCreationDisposition: u32,
+        dwFlagsAndAttributes: u32,
+        hTemplateFile: HANDLE,
+    ) -> HANDLE;
+
+    fn CloseHandle(hObject: HANDLE) -> i32;
+
+    fn GetNamedSecurityInfoW(
+        pObjectName: *const u16,
+        ObjectType: u32,
+        SecurityInfo: u32,
+        ppsidOwner: *mut *mut c_void,
+        ppsidGroup: *mut *mut c_void,
+        ppDacl: *mut *mut c_void,
+        ppSacl: *mut *mut c_void,
+        ppSecurityDescriptor: *mut *mut c_void,
+    ) -> u32;
+
+    fn SetNamedSecurityInfoW(
+        pObjectName: *const u16,
+        ObjectType: u32,
+        SecurityInfo: u32,
+        ppsidOwner: *mut c_void,
+        ppsidGroup: *mut c_void,
+        ppDacl: *mut c_void,
+        ppSacl: *mut c_void,
+    ) -> u32;
+
+    fn ConvertSidToStringSidW(
+        Sid: *mut c_void,
+        StringSid: *mut *mut u16,
+    ) -> i32;
+
+    fn LocalFree(hMem: HLOCAL) -> HLOCAL;
+}
+
+/// 文件/目录信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileInfo {
     pub name: String,
@@ -145,18 +191,15 @@ fn file_info_from_path(file_path: &Path) -> Result<FileInfo, String> {
 
 /// 使用 Windows API 获取文件/目录的所有者名称（SID 字符串形式）
 fn get_owner_string(path: &Path) -> String {
-    use windows::Win32::Security::PSID;
-
     let wide = to_wide(path.to_string_lossy().as_ref());
-    let pcwstr = PCWSTR::from_raw(wide.as_ptr());
 
-    let mut psid_owner: PSID = unsafe { PSID(std::ptr::null_mut()) };
-    let mut p_sd: *mut std::ffi::c_void = std::ptr::null_mut();
+    let mut psid_owner: *mut c_void = std::ptr::null_mut();
+    let mut p_sd: *mut c_void = std::ptr::null_mut();
 
     // 获取安全描述符中的所有者 SID
     let result = unsafe {
         GetNamedSecurityInfoW(
-            pcwstr,
+            wide.as_ptr(),
             SE_FILE_OBJECT,
             OWNER_SECURITY_INFORMATION,
             &mut psid_owner,
@@ -167,30 +210,34 @@ fn get_owner_string(path: &Path) -> String {
         )
     };
 
-    if !result.is_ok() {
-        unsafe { LocalFree(HLOCAL(p_sd as isize)).ok() };
+    if result != 0 {
+        if !p_sd.is_null() {
+            let _ = unsafe { LocalFree(p_sd as HLOCAL) };
+        }
         return String::new();
     }
 
     // 将 SID 转换为字符串
-    let mut pstr_sid: windows::core::PWSTR = unsafe { windows::core::PWSTR(std::ptr::null_mut()) };
+    let mut pstr_sid: *mut u16 = std::ptr::null_mut();
     let success = unsafe {
         ConvertSidToStringSidW(psid_owner, &mut pstr_sid)
     };
 
     // 释放安全描述符
-    unsafe { LocalFree(HLOCAL(p_sd as isize)).ok() };
+    let _ = unsafe { LocalFree(p_sd as HLOCAL) };
 
-    if !success.as_bool() || pstr_sid.0.is_null() {
+    if success == 0 || pstr_sid.is_null() {
         return String::new();
     }
 
-    let owner = pstr_sid.to_string().unwrap_or_default();
+    let owner = unsafe {
+        let len = (0..).take_while(|&i| *pstr_sid.offset(i) != 0).count();
+        let slice = std::slice::from_raw_parts(pstr_sid, len);
+        String::from_utf16_lossy(slice)
+    };
 
     // 释放转换后的 SID 字符串
-    unsafe {
-        LocalFree(HLOCAL(pstr_sid.0 as isize)).ok();
-    }
+    let _ = unsafe { LocalFree(pstr_sid as HLOCAL) };
 
     owner
 }

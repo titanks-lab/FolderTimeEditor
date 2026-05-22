@@ -1,12 +1,47 @@
-use super::{filetime_to_unix, to_wide, unix_to_filetime};
+use super::{filetime_to_unix, to_wide, unix_to_filetime, FILETIME};
 use serde::{Deserialize, Serialize};
-use windows::core::PCWSTR;
-use windows::Win32::Foundation::{HANDLE, FILETIME};
-use windows::Win32::Storage::FileSystem::{
-    CloseHandle, CreateFileW, GetFileTime, SetFileTime,
-    FILE_FLAG_BACKUP_SEMANTICS, FILE_SHARE_READ, FILE_SHARE_WRITE,
-    GENERIC_READ, GENERIC_WRITE, OPEN_EXISTING,
-};
+use std::ptr;
+
+/// HANDLE 类型
+type HANDLE = isize;
+const INVALID_HANDLE_VALUE: HANDLE = -1;
+
+/// Win32 常量
+const GENERIC_READ: u32 = 0x80000000;
+const GENERIC_WRITE: u32 = 0x40000000;
+const FILE_SHARE_READ: u32 = 0x00000001;
+const FILE_SHARE_WRITE: u32 = 0x00000002;
+const OPEN_EXISTING: u32 = 3;
+const FILE_FLAG_BACKUP_SEMANTICS: u32 = 0x02000000;
+
+/// FFI 声明 Win32 API
+extern "system" {
+    fn CreateFileW(
+        lpFileName: *const u16,
+        dwDesiredAccess: u32,
+        dwShareMode: u32,
+        lpSecurityAttributes: *const std::ffi::c_void,
+        dwCreationDisposition: u32,
+        dwFlagsAndAttributes: u32,
+        hTemplateFile: HANDLE,
+    ) -> HANDLE;
+
+    fn GetFileTime(
+        hFile: HANDLE,
+        lpCreationTime: *mut FILETIME,
+        lpLastAccessTime: *mut FILETIME,
+        lpLastWriteTime: *mut FILETIME,
+    ) -> i32;
+
+    fn SetFileTime(
+        hFile: HANDLE,
+        lpCreationTime: *const FILETIME,
+        lpLastAccessTime: *const FILETIME,
+        lpLastWriteTime: *const FILETIME,
+    ) -> i32;
+
+    fn CloseHandle(hObject: HANDLE) -> i32;
+}
 
 /// 文件时间信息
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -22,17 +57,17 @@ pub fn get_file_times(path: String) -> Result<FileTimes, String> {
     let wide = to_wide(&path);
     let handle = unsafe {
         CreateFileW(
-            PCWSTR::from_raw(wide.as_ptr()),
+            wide.as_ptr(),
             GENERIC_READ,
             FILE_SHARE_READ | FILE_SHARE_WRITE,
-            None,
+            ptr::null(),
             OPEN_EXISTING,
             FILE_FLAG_BACKUP_SEMANTICS,
-            None,
+            0,
         )
     };
 
-    if !handle.is_valid() {
+    if handle == INVALID_HANDLE_VALUE {
         return Err(format!("无法打开文件: {}", path));
     }
 
@@ -49,9 +84,9 @@ pub fn get_file_times(path: String) -> Result<FileTimes, String> {
         )
     };
 
-    unsafe { CloseHandle(handle).ok() };
+    let _ = unsafe { CloseHandle(handle) };
 
-    if !success.as_bool() {
+    if success == 0 {
         return Err("GetFileTime 调用失败".into());
     }
 
@@ -68,17 +103,17 @@ pub fn set_file_times(path: String, times: FileTimes) -> Result<(), String> {
     let wide = to_wide(&path);
     let handle = unsafe {
         CreateFileW(
-            PCWSTR::from_raw(wide.as_ptr()),
+            wide.as_ptr(),
             GENERIC_WRITE,
             FILE_SHARE_READ | FILE_SHARE_WRITE,
-            None,
+            ptr::null(),
             OPEN_EXISTING,
             FILE_FLAG_BACKUP_SEMANTICS,
-            None,
+            0,
         )
     };
 
-    if !handle.is_valid() {
+    if handle == INVALID_HANDLE_VALUE {
         return Err(format!("无法打开文件: {}", path));
     }
 
@@ -91,17 +126,26 @@ pub fn set_file_times(path: String, times: FileTimes) -> Result<(), String> {
     let mut last_access_time = FILETIME::default();
     let mut last_write_time = FILETIME::default();
 
-    let ct_ptr = ct.as_ref().map(|t| t as *const _).unwrap_or(std::ptr::null());
-    let at_ptr = at.as_ref().map(|t| t as *const _).unwrap_or(std::ptr::null());
-    let wt_ptr = wt.as_ref().map(|t| t as *const _).unwrap_or(std::ptr::null());
+    let ct_ptr = ct
+        .as_ref()
+        .map(|t| t as *const FILETIME)
+        .unwrap_or(ptr::null());
+    let at_ptr = at
+        .as_ref()
+        .map(|t| t as *const FILETIME)
+        .unwrap_or(ptr::null());
+    let wt_ptr = wt
+        .as_ref()
+        .map(|t| t as *const FILETIME)
+        .unwrap_or(ptr::null());
 
     let success = unsafe {
         SetFileTime(handle, ct_ptr, at_ptr, wt_ptr)
     };
 
-    unsafe { CloseHandle(handle).ok() };
+    let _ = unsafe { CloseHandle(handle) };
 
-    if !success.as_bool() {
+    if success == 0 {
         return Err("SetFileTime 调用失败".into());
     }
 

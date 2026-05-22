@@ -5,8 +5,6 @@ pub mod owner;
 use std::ffi::OsStr;
 use std::os::windows::ffi::OsStrExt;
 
-use windows::Win32::Foundation::FILETIME;
-
 /// 将 Rust 字符串转换为 UTF-16 宽字符串（以 \0 结尾）
 pub fn to_wide(s: &str) -> Vec<u16> {
     OsStr::new(s)
@@ -15,7 +13,24 @@ pub fn to_wide(s: &str) -> Vec<u16> {
         .collect()
 }
 
-/// 将 FILETIME（1601年以来的100ns间隔）转换为 Unix 时间戳（秒）
+/// FILETIME 结构体（1601年以来的100ns间隔）
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct FILETIME {
+    pub dwLowDateTime: u32,
+    pub dwHighDateTime: u32,
+}
+
+impl Default for FILETIME {
+    fn default() -> Self {
+        FILETIME {
+            dwLowDateTime: 0,
+            dwHighDateTime: 0,
+        }
+    }
+}
+
+/// 将 FILETIME 转换为 Unix 时间戳（秒）
 pub fn filetime_to_unix(ft: FILETIME) -> i64 {
     let filetime = (ft.dwHighDateTime as u64) << 32 | (ft.dwLowDateTime as u64);
     (filetime as i64 - 116444736000000000) / 10_000_000
