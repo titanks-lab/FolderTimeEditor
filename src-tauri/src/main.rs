@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    folder_time_editor_lib::run()
+    yt_file_time_editor_lib::run()
 }

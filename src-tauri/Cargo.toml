@@ -1,12 +1,12 @@
 [package]
-name = "folder-time-editor"
+name = "YT-FileTimeEditor"
 version = "2.0.0"
-description = "文件夹时间批量修改工具"
+description = "文件时间编辑器"
 authors = ["titanks-lab"]
 edition = "2021"
 
 [lib]
-name = "folder_time_editor_lib"
+name = "yt_file_time_editor_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
