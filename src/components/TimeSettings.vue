@@ -39,26 +39,26 @@ async function previewChanges() {
 
       if (settings.creation.enabled) {
         const newVal = buildTimestamp(settings.creation)
-        if (newVal !== currentTimes.creation_time) {
-          changes.push({ path, attribute: '创建时间', old_value: formatTimestamp(currentTimes.creation_time), new_value: formatTimestamp(newVal) })
+        if (newVal !== _currentTimes.creation_time) {
+          changes.push({ path, attribute: '创建时间', old_value: formatTimestamp(_currentTimes.creation_time), new_value: formatTimestamp(newVal) })
         }
       }
       if (settings.modification.enabled) {
         const newVal = buildTimestamp(settings.modification)
-        if (newVal !== currentTimes.last_write_time) {
-          changes.push({ path, attribute: '修改时间', old_value: formatTimestamp(currentTimes.last_write_time), new_value: formatTimestamp(newVal) })
+        if (newVal !== _currentTimes.last_write_time) {
+          changes.push({ path, attribute: '修改时间', old_value: formatTimestamp(_currentTimes.last_write_time), new_value: formatTimestamp(newVal) })
         }
       }
       if (settings.access.enabled) {
         const newVal = buildTimestamp(settings.access)
-        if (newVal !== currentTimes.last_access_time) {
-          changes.push({ path, attribute: '访问时间', old_value: formatTimestamp(currentTimes.last_access_time), new_value: formatTimestamp(newVal) })
+        if (newVal !== _currentTimes.last_access_time) {
+          changes.push({ path, attribute: '访问时间', old_value: formatTimestamp(_currentTimes.last_access_time), new_value: formatTimestamp(newVal) })
         }
       }
       if (settings.owner_enabled && settings.owner) {
         const _currentOwner = store.fileItems.find(f => f.path === path)?.owner || ''
-        if (currentOwner !== settings.owner) {
-          changes.push({ path, attribute: '所有者', old_value: currentOwner || '(未知)', new_value: settings.owner })
+        if (_currentOwner !== settings.owner) {
+          changes.push({ path, attribute: '所有者', old_value: _currentOwner || '(未知)', new_value: settings.owner })
         }
       }
     } catch (err: unknown) {
