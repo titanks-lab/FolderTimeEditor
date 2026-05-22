@@ -3,14 +3,10 @@ pub mod file_walk;
 pub mod owner;
 
 use std::ffi::OsStr;
-use std::os::windows::ffi::OsStrExt;
 
-/// 将 Rust 字符串转换为 UTF-16 宽字符串（以 \0 结尾）
+/// 将 Rust 字符串转换为 UTF-16 宽字符串（以 \\0 结尾）
 pub fn to_wide(s: &str) -> Vec<u16> {
-    OsStr::new(s)
-        .encode_wide()
-        .chain(std::iter::once(0))
-        .collect()
+    s.encode_utf16().chain(std::iter::once(0)).collect()
 }
 
 /// FILETIME 结构体（1601年以来的100ns间隔）
