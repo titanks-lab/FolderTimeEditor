@@ -1,0 +1,25 @@
+[package]
+name = "folder-time-editor"
+version = "2.0.0"
+description = "文件夹时间批量修改工具"
+authors = ["titanks-lab"]
+edition = "2021"
+
+[lib]
+name = "folder_time_editor_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["dialog"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_Security",
+    "Win32_Security_Authorization",
+    "Win32_System_IO",
+] }

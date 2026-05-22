@@ -1,0 +1,7 @@
+node_modules/
+dist/
+src-tauri/target/
+*.zip
+*.exe
+.DS_Store
+Thumbs.db
