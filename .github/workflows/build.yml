@@ -35,23 +35,23 @@ jobs:
 
     - name: Package as ZIP
       run: |
-        Compress-Archive -Path src-tauri/target/release/folder-time-editor.exe -DestinationPath FolderTimeEditor-Tauri.zip -Force
+        Compress-Archive -Path src-tauri/target/release/folder-time-editor.exe -DestinationPath YT-FileTimeEditor.zip -Force
 
     - name: Upload ZIP artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FolderTimeEditor-Tauri
-        path: FolderTimeEditor-Tauri.zip
+        name: YT-FileTimeEditor
+        path: YT-FileTimeEditor.zip
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
       with:
-        files: FolderTimeEditor-Tauri.zip
+        files: YT-FileTimeEditor.zip
         body: |
-          ## FolderTimeEditor Tauri v2.0.0
+          ## YT-FileTimeEditor v2.0.0
 
-          文件夹/文件时间属性批量修改工具（Tauri 重构版）
+          文件时间编辑器（Tauri 重构版）
 
           ### 功能特性
           - 批量修改创建时间/修改时间/访问时间
@@ -59,7 +59,6 @@ jobs:
           - 显示所有属性：文件名/路径/创建时间/修改时间/访问时间/大小/所有者
           - 可拖动分割线布局
           - 原生日期选择器
-          - 时间方案保存/加载
 
           ### 安装说明
-          下载 ZIP → 解压 → 运行 FolderTimeEditor.exe
+          下载 ZIP → 解压 → 运行 YT-FileTimeEditor.exe
